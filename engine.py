@@ -368,7 +368,7 @@ Reply in JSON only:
 
         try:
             response = llm.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=prompt,
             )
             raw = response.text.strip()
@@ -453,7 +453,7 @@ Reply in JSON only:
 
     try:
         response = llm.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
         )
         raw = response.text.strip().strip("```json").strip("```").strip()
@@ -513,7 +513,7 @@ Reply in JSON only:
         from google import genai as _genai
         llm = _genai.Client(api_key=GEMINI_API_KEY)
         response = llm.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
         )
         raw = response.text.strip().strip("```json").strip("```").strip()
