@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+data/chroma_store/
+data/chunks_cache.pkl
+data/eval_results/
+data/semantic_cache.json
+*.pkl
+
+logs/

@@ -1,0 +1,95 @@
+{
+  "repo_path": "./demo_repo",
+  "code_chunks": [
+    {
+      "id": "payments_api\\processor.py::charge_customer",
+      "file": "payments_api\\processor.py",
+      "name": "charge_customer",
+      "type": "function",
+      "signature": "def charge_customer(customer_id, amount, currency)",
+      "docstring": "Charge a customer for a given amount.\n\nArgs:\n    customer_id: Unique customer identifier.\n    amount: Amount to charge in the given currency.\n    currency: Currency code (default: USD).\n\nReturns:\n    dict with keys: transaction_id, status, amount, currency.",
+      "full_text": "def charge_customer(customer_id, amount, currency)\nCharge a customer for a given amount.\n\nArgs:\n    customer_id: Unique customer identifier.\n    amount: Amount to charge in the given currency.\n    currency: Currency code (default: USD).\n\nReturns:\n    dict with keys: transaction_id, status, amount, currency."
+    },
+    {
+      "id": "payments_api\\processor.py::refund_transaction",
+      "file": "payments_api\\processor.py",
+      "name": "refund_transaction",
+      "type": "function",
+      "signature": "def refund_transaction(transaction_id, reason)",
+      "docstring": "Refund a previously completed transaction.\n\nArgs:\n    transaction_id: ID of transaction to refund.\n    reason: Reason for refund (default: customer_request).\n\nReturns:\n    dict with keys: refund_id, status, transaction_id.",
+      "full_text": "def refund_transaction(transaction_id, reason)\nRefund a previously completed transaction.\n\nArgs:\n    transaction_id: ID of transaction to refund.\n    reason: Reason for refund (default: customer_request).\n\nReturns:\n    dict with keys: refund_id, status, transaction_id."
+    },
+    {
+      "id": "payments_api\\processor.py::get_customer_balance",
+      "file": "payments_api\\processor.py",
+      "name": "get_customer_balance",
+      "type": "function",
+      "signature": "def get_customer_balance(customer_id, account_type)",
+      "docstring": "Get current balance for a customer account.\n\nArgs:\n    customer_id: Unique customer identifier.\n    account_type: Account type to query (default: primary).\n\nReturns:\n    dict with keys: customer_id, balance, account_type, currency.",
+      "full_text": "def get_customer_balance(customer_id, account_type)\nGet current balance for a customer account.\n\nArgs:\n    customer_id: Unique customer identifier.\n    account_type: Account type to query (default: primary).\n\nReturns:\n    dict with keys: customer_id, balance, account_type, currency."
+    }
+  ],
+  "doc_sections": [
+    {
+      "id": "docs\\README.md::Payments API Documentation",
+      "file": "docs\\README.md",
+      "heading": "Payments API Documentation",
+      "content": "",
+      "full_text": "# Payments API Documentation"
+    },
+    {
+      "id": "docs\\README.md::Overview",
+      "file": "docs\\README.md",
+      "heading": "Overview",
+      "content": "The Payments API provides functions for processing customer transactions on the platform.\n\n---",
+      "full_text": "## Overview\n\nThe Payments API provides functions for processing customer transactions on the platform.\n\n---"
+    },
+    {
+      "id": "docs\\README.md::charge_customer",
+      "file": "docs\\README.md",
+      "heading": "charge_customer",
+      "content": "Charges a customer account for a specified amount.\n\n**Parameters:**\n- `customer_id` (str): Unique customer identifier.\n- `amount` (float): Amount to charge in USD.\n- `currency` (str): Currency code. Default: `USD`.\n\n**Returns:** `dict` with keys: `transaction_id`, `status`, `amount`, `currency`.\n\n**Example:**\n```python\nresult = charge_customer(\"cust_123\", 49.99)\n```\n\n---",
+      "full_text": "## charge_customer\n\nCharges a customer account for a specified amount.\n\n**Parameters:**\n- `customer_id` (str): Unique customer identifier.\n- `amount` (float): Amount to charge in USD.\n- `currency` (str): Currency code. Default: `USD`.\n\n**Returns:** `dict` with keys: `transaction_id`, `status`, `amount`, `currency`.\n\n**Example:**\n```python\nresult = charge_customer(\"cust_123\", 49.99)\n```\n\n---"
+    },
+    {
+      "id": "docs\\README.md::refund_transaction",
+      "file": "docs\\README.md",
+      "heading": "refund_transaction",
+      "content": "Refunds a previously completed transaction.\n\n**Parameters:**\n- `transaction_id` (str): ID of the transaction to refund.\n- `reason` (str): Reason for refund. Default: `customer_request`.\n\n**Returns:** `dict` with keys: `refund_id`, `status`, `transaction_id`.\n\n**Example:**\n```python\nresult = refund_transaction(\"txn_cust_123_001\")\n```\n\n---",
+      "full_text": "## refund_transaction\n\nRefunds a previously completed transaction.\n\n**Parameters:**\n- `transaction_id` (str): ID of the transaction to refund.\n- `reason` (str): Reason for refund. Default: `customer_request`.\n\n**Returns:** `dict` with keys: `refund_id`, `status`, `transaction_id`.\n\n**Example:**\n```python\nresult = refund_transaction(\"txn_cust_123_001\")\n```\n\n---"
+    },
+    {
+      "id": "docs\\README.md::get_customer_balance",
+      "file": "docs\\README.md",
+      "heading": "get_customer_balance",
+      "content": "Returns the current balance for a customer account.\n\n**Parameters:**\n- `customer_id` (str): Unique customer identifier.\n- `account_type` (str): Account type to query. Default: `primary`.\n\n**Returns:** `dict` with keys: `customer_id`, `balance`, `account_type`, `currency`.\n\n**Example:**\n```python\nresult = get_customer_balance(\"cust_123\")\n```",
+      "full_text": "## get_customer_balance\n\nReturns the current balance for a customer account.\n\n**Parameters:**\n- `customer_id` (str): Unique customer identifier.\n- `account_type` (str): Account type to query. Default: `primary`.\n\n**Returns:** `dict` with keys: `customer_id`, `balance`, `account_type`, `currency`.\n\n**Example:**\n```python\nresult = get_customer_balance(\"cust_123\")\n```"
+    }
+  ],
+  "links": [
+    {
+      "code_id": "payments_api\\processor.py::charge_customer",
+      "doc_id": "docs\\README.md::charge_customer",
+      "method": "name_match",
+      "score": 1.0
+    },
+    {
+      "code_id": "payments_api\\processor.py::refund_transaction",
+      "doc_id": "docs\\README.md::refund_transaction",
+      "method": "name_match",
+      "score": 1.0
+    },
+    {
+      "code_id": "payments_api\\processor.py::get_customer_balance",
+      "doc_id": "docs\\README.md::get_customer_balance",
+      "method": "name_match",
+      "score": 1.0
+    },
+    {
+      "code_id": "payments_api\\processor.py::get_customer_balance",
+      "doc_id": "docs\\README.md::charge_customer",
+      "method": "embedding",
+      "score": 0.754
+    }
+  ]
+}

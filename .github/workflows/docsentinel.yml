@@ -1,0 +1,37 @@
+name: DocSentinel — Doc Health Check
+
+on:
+  pull_request:
+    paths:
+      - '**.py'
+      - '**.sql'
+
+jobs:
+  doc-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install google-genai chromadb PyGithub python-dotenv
+
+      - name: Run DocSentinel
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_NAME: ${{ github.repository }}
+          BASE_BRANCH: ${{ github.base_ref }}
+        run: python docsentinel_action.py
