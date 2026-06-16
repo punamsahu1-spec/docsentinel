@@ -374,6 +374,7 @@ Reply in JSON only:
             raw = response.text.strip().strip("```json").strip("```").strip()
             result = json.loads(raw)
             s["is_stale"] = result.get("is_stale", False)
+            print(f"   LLM verdict for {s['doc_section']['heading']}: {raw}")
             s["reason"] = result.get("reason", "")
             s["confidence"] = result.get("confidence", 0.0)
         except Exception as e:
