@@ -19,9 +19,10 @@ def charge_customer(customer_id: str, amount_usd: float, currency: str = "USD") 
     # Simulate charge
     return {
         "transaction_id": f"txn_{customer_id}_001",
-        "status": "success",
-        "amount": amount,
-        "currency": currency,
+    "status": "success",
+    "amount": amount_usd,
+    "currency": currency,
+    "fee": round(amount_usd * 0.02, 2),   # ADD THIS LINE
     }
 
 
