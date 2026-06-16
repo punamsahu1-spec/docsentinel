@@ -235,12 +235,26 @@ def get_git_diff(repo_path: str, base_branch: str = "main") -> list[dict]:
 
     changes = []
     try:
+        # Try origin/base_branch first (CI), fall back to local base_branch
+        fetch = subprocess.run(
+            ["git", "fetch", "origin", base_branch],
+            cwd=repo_path, capture_output=True, text=True
+        )
+        base_ref = f"origin/{base_branch}"
+        test = subprocess.run(
+            ["git", "diff", f"{base_ref}...HEAD", "--name-only"],
+            cwd=repo_path, capture_output=True, text=True
+        )
+        if not test.stdout.strip():
+            base_ref = base_branch  # fall back to local
+
         # Get list of changed files
         result = subprocess.run(
-            ["git", "diff", f"{base_branch}...HEAD", "--name-only"],
+            ["git", "diff", f"{base_ref}...HEAD", "--name-only"],
             cwd=repo_path, capture_output=True, text=True
         )
         changed_files = [f.strip() for f in result.stdout.splitlines() if f.strip()]
+        print(f"   Base ref: {base_ref}, changed files: {changed_files}")
 
         for fpath in changed_files:
             # Skip non-code, non-doc files
@@ -249,7 +263,7 @@ def get_git_diff(repo_path: str, base_branch: str = "main") -> list[dict]:
 
             # Get old content
             old = subprocess.run(
-                ["git", "show", f"{base_branch}:{fpath}"],
+                ["git", "show", f"{base_ref}:{fpath}"],
                 cwd=repo_path, capture_output=True, text=True
             )
             # Get new content
@@ -258,7 +272,7 @@ def get_git_diff(repo_path: str, base_branch: str = "main") -> list[dict]:
 
             # Get diff
             diff = subprocess.run(
-                ["git", "diff", f"{base_branch}...HEAD", "--", fpath],
+                ["git", "diff", f"{base_ref}...HEAD", "--", fpath],
                 cwd=repo_path, capture_output=True, text=True
             )
 
@@ -332,6 +346,8 @@ def verify_staleness(suspects: list[dict]) -> list[dict]:
     Adds: is_stale (bool), reason (str), confidence (float)
     """
     from google import genai as _genai
+    from config import GEMINI_API_KEY
+    import time
     llm = _genai.Client(api_key=GEMINI_API_KEY)
 
     verified = []
@@ -354,21 +370,31 @@ Reply in JSON only:
 
         try:
             response = llm.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=prompt,
             )
-            raw = response.text.strip().strip("```json").strip("```").strip()
+            raw = response.text.strip()
+            if "```" in raw:
+                parts = raw.split("```")
+                raw = parts[1] if len(parts) > 1 else parts[0]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+            raw = raw.strip()
+            print(f"   VERIFY [{s['doc_section']['heading']}]: {raw[:300]}")
             result = json.loads(raw)
             s["is_stale"] = result.get("is_stale", False)
             s["reason"] = result.get("reason", "")
             s["confidence"] = result.get("confidence", 0.0)
         except Exception as e:
+            print(f"   VERIFY ERROR: {e}")
             s["is_stale"] = False
             s["reason"] = f"Verification error: {e}"
             s["confidence"] = 0.0
 
         if s["is_stale"]:
             verified.append(s)
+
+        time.sleep(15)  # Gemini free tier: 5 req/min
 
     return verified
 
@@ -403,7 +429,7 @@ def repair_doc_section(stale: dict) -> dict:
     Adds: repaired_text, repair_confidence, mode (auto_fix | human_review)
     """
     from google import genai as _genai
-    from config import CONFIDENCE_HIGH, CONFIDENCE_LOW
+    from config import GEMINI_API_KEY, CONFIDENCE_HIGH, CONFIDENCE_LOW
     llm = _genai.Client(api_key=GEMINI_API_KEY)
 
     prompt = f"""You are a technical documentation editor.
@@ -430,10 +456,16 @@ Reply in JSON only:
 
     try:
         response = llm.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
         )
-        raw = response.text.strip().strip("```json").strip("```").strip()
+        raw = response.text.strip()
+        if "```" in raw:
+            parts = raw.split("```")
+            raw = parts[1] if len(parts) > 1 else parts[0]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        raw = raw.strip()
         result = json.loads(raw)
 
         confidence = result.get("confidence", 0.0)
@@ -488,12 +520,19 @@ Reply in JSON only:
 
     try:
         from google import genai as _genai
+        from config import GEMINI_API_KEY
         llm = _genai.Client(api_key=GEMINI_API_KEY)
         response = llm.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
         )
-        raw = response.text.strip().strip("```json").strip("```").strip()
+        raw = response.text.strip()
+        if "```" in raw:
+            parts = raw.split("```")
+            raw = parts[1] if len(parts) > 1 else parts[0]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        raw = raw.strip()
         result = json.loads(raw)
         stale["validation_passed"] = result.get("validation_passed", False)
         stale["validation_note"] = result.get("validation_note", "")
