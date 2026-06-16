@@ -4,27 +4,28 @@ Payment processing module for DocSentinel demo.
 
 
 # In charge_customer() — rename: amount → amount_usd
-def charge_customer(customer_id: str, amount_usd: float, currency: str = "USD") -> dict:
+# Change charge_customer — rename parameter AND change return structure
+def charge_customer(customer_id: str, amount_usd: float, currency: str = "USD", payment_method: str = "card") -> dict:
     """
     Charge a customer for a given amount.
 
     Args:
         customer_id: Unique customer identifier.
-        amount: Amount to charge in the given currency.
+        amount_usd: Amount to charge in the given currency.
         currency: Currency code (default: USD).
+        payment_method: Payment method to use (default: card).
 
     Returns:
-        dict with keys: transaction_id, status, amount, currency.
+        dict with keys: transaction_id, status, amount_usd, currency, payment_method, fee.
     """
-    # Simulate charge
     return {
         "transaction_id": f"txn_{customer_id}_001",
-    "status": "success",
-    "amount": amount_usd,
-    "currency": currency,
-    "fee": round(amount_usd * 0.02, 2),   # ADD THIS LINE
+        "status": "success",
+        "amount_usd": amount_usd,
+        "currency": currency,
+        "payment_method": payment_method,
+        "fee": round(amount_usd * 0.02, 2),
     }
-
 
 def refund_transaction(transaction_id: str, reason: str = "customer_request") -> dict:
     """
