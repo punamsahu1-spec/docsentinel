@@ -345,8 +345,9 @@ def verify_staleness(suspects: list[dict]) -> list[dict]:
     LLM verifies each suspect: is the doc section stale given the code change?
     Adds: is_stale (bool), reason (str), confidence (float)
     """
-    from google import genai as _genai
-    llm = _genai.Client(api_key=GEMINI_API_KEY)
+    import anthropic
+    from config import ANTHROPIC_API_KEY
+    llm = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
     verified = []
     for s in suspects:
@@ -367,11 +368,12 @@ Reply in JSON only:
 }}"""
 
         try:
-            response = llm.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
+            response = llm.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=512,
+                messages=[{"role": "user", "content": prompt}]
             )
-            raw = response.text.strip()
+            raw = response.content[0].text.strip()
             if "```" in raw:
                 parts = raw.split("```")
                 raw = parts[1] if len(parts) > 1 else parts[0]
@@ -384,14 +386,16 @@ Reply in JSON only:
             s["reason"] = result.get("reason", "")
             s["confidence"] = result.get("confidence", 0.0)
         except Exception as e:
-            s["is_stale"] = False
             print(f"   VERIFY ERROR: {e}")
-            s["reason"] = f"Verification error: {e}"
+            s["is_stale"] = False
             s["reason"] = f"Verification error: {e}"
             s["confidence"] = 0.0
 
         if s["is_stale"]:
             verified.append(s)
+
+        import time
+        time.sleep(15)  # Gemini free tier: 5 req/min
 
     return verified
 
@@ -425,9 +429,9 @@ def repair_doc_section(stale: dict) -> dict:
     LLM rewrites only the stale parts of a doc section.
     Adds: repaired_text, repair_confidence, mode (auto_fix | human_review)
     """
-    from google import genai as _genai
-    from config import CONFIDENCE_HIGH, CONFIDENCE_LOW
-    llm = _genai.Client(api_key=GEMINI_API_KEY)
+    import anthropic
+    from config import ANTHROPIC_API_KEY, CONFIDENCE_HIGH, CONFIDENCE_LOW
+    llm = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
     prompt = f"""You are a technical documentation editor.
 
@@ -452,11 +456,18 @@ Reply in JSON only:
 }}"""
 
     try:
-        response = llm.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
+        response = llm.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}]
         )
-        raw = response.text.strip().strip("```json").strip("```").strip()
+        raw = response.content[0].text.strip()
+        if "```" in raw:
+            parts = raw.split("```")
+            raw = parts[1] if len(parts) > 1 else parts[0]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        raw = raw.strip()
         result = json.loads(raw)
 
         confidence = result.get("confidence", 0.0)
@@ -510,13 +521,21 @@ Reply in JSON only:
 }}"""
 
     try:
-        from google import genai as _genai
-        llm = _genai.Client(api_key=GEMINI_API_KEY)
-        response = llm.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
+        import anthropic
+        from config import ANTHROPIC_API_KEY
+        llm = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        response = llm.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=512,
+            messages=[{"role": "user", "content": prompt}]
         )
-        raw = response.text.strip().strip("```json").strip("```").strip()
+        raw = response.content[0].text.strip()
+        if "```" in raw:
+            parts = raw.split("```")
+            raw = parts[1] if len(parts) > 1 else parts[0]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        raw = raw.strip()
         result = json.loads(raw)
         stale["validation_passed"] = result.get("validation_passed", False)
         stale["validation_note"] = result.get("validation_note", "")
