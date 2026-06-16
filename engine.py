@@ -385,6 +385,8 @@ Reply in JSON only:
             s["confidence"] = result.get("confidence", 0.0)
         except Exception as e:
             s["is_stale"] = False
+            print(f"   VERIFY ERROR: {e}")
+            s["reason"] = f"Verification error: {e}"
             s["reason"] = f"Verification error: {e}"
             s["confidence"] = 0.0
 
