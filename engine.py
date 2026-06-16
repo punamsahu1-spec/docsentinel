@@ -235,12 +235,26 @@ def get_git_diff(repo_path: str, base_branch: str = "main") -> list[dict]:
 
     changes = []
     try:
+        # Try origin/base_branch first (CI), fall back to local base_branch
+        fetch = subprocess.run(
+            ["git", "fetch", "origin", base_branch],
+            cwd=repo_path, capture_output=True, text=True
+        )
+        base_ref = f"origin/{base_branch}"
+        test = subprocess.run(
+            ["git", "diff", f"{base_ref}...HEAD", "--name-only"],
+            cwd=repo_path, capture_output=True, text=True
+        )
+        if not test.stdout.strip():
+            base_ref = base_branch  # fall back to local
+
         # Get list of changed files
         result = subprocess.run(
-            ["git", "diff", f"{base_branch}...HEAD", "--name-only"],
+            ["git", "diff", f"{base_ref}...HEAD", "--name-only"],
             cwd=repo_path, capture_output=True, text=True
         )
         changed_files = [f.strip() for f in result.stdout.splitlines() if f.strip()]
+        print(f"   Base ref: {base_ref}, changed files: {changed_files}")
 
         for fpath in changed_files:
             # Skip non-code, non-doc files
@@ -249,7 +263,7 @@ def get_git_diff(repo_path: str, base_branch: str = "main") -> list[dict]:
 
             # Get old content
             old = subprocess.run(
-                ["git", "show", f"{base_branch}:{fpath}"],
+                ["git", "show", f"{base_ref}:{fpath}"],
                 cwd=repo_path, capture_output=True, text=True
             )
             # Get new content
@@ -258,7 +272,7 @@ def get_git_diff(repo_path: str, base_branch: str = "main") -> list[dict]:
 
             # Get diff
             diff = subprocess.run(
-                ["git", "diff", f"{base_branch}...HEAD", "--", fpath],
+                ["git", "diff", f"{base_ref}...HEAD", "--", fpath],
                 cwd=repo_path, capture_output=True, text=True
             )
 
