@@ -371,10 +371,16 @@ Reply in JSON only:
                 model="gemini-2.0-flash",
                 contents=prompt,
             )
-            raw = response.text.strip().strip("```json").strip("```").strip()
+            raw = response.text.strip()
+            if "```" in raw:
+                parts = raw.split("```")
+                raw = parts[1] if len(parts) > 1 else parts[0]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+            raw = raw.strip()
+            print(f"   VERIFY [{s['doc_section']['heading']}]: {raw[:300]}")
             result = json.loads(raw)
             s["is_stale"] = result.get("is_stale", False)
-            print(f"   LLM verdict for {s['doc_section']['heading']}: {raw}")
             s["reason"] = result.get("reason", "")
             s["confidence"] = result.get("confidence", 0.0)
         except Exception as e:
