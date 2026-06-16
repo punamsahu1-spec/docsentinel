@@ -345,9 +345,10 @@ def verify_staleness(suspects: list[dict]) -> list[dict]:
     LLM verifies each suspect: is the doc section stale given the code change?
     Adds: is_stale (bool), reason (str), confidence (float)
     """
-    import anthropic
-    from config import ANTHROPIC_API_KEY
-    llm = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    from google import genai as _genai
+    from config import GEMINI_API_KEY
+    import time
+    llm = _genai.Client(api_key=GEMINI_API_KEY)
 
     verified = []
     for s in suspects:
@@ -368,12 +369,11 @@ Reply in JSON only:
 }}"""
 
         try:
-            response = llm.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=512,
-                messages=[{"role": "user", "content": prompt}]
+            response = llm.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
             )
-            raw = response.content[0].text.strip()
+            raw = response.text.strip()
             if "```" in raw:
                 parts = raw.split("```")
                 raw = parts[1] if len(parts) > 1 else parts[0]
@@ -394,7 +394,6 @@ Reply in JSON only:
         if s["is_stale"]:
             verified.append(s)
 
-        import time
         time.sleep(15)  # Gemini free tier: 5 req/min
 
     return verified
@@ -429,9 +428,9 @@ def repair_doc_section(stale: dict) -> dict:
     LLM rewrites only the stale parts of a doc section.
     Adds: repaired_text, repair_confidence, mode (auto_fix | human_review)
     """
-    import anthropic
-    from config import ANTHROPIC_API_KEY, CONFIDENCE_HIGH, CONFIDENCE_LOW
-    llm = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    from google import genai as _genai
+    from config import GEMINI_API_KEY, CONFIDENCE_HIGH, CONFIDENCE_LOW
+    llm = _genai.Client(api_key=GEMINI_API_KEY)
 
     prompt = f"""You are a technical documentation editor.
 
@@ -456,12 +455,11 @@ Reply in JSON only:
 }}"""
 
     try:
-        response = llm.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}]
+        response = llm.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
         )
-        raw = response.content[0].text.strip()
+        raw = response.text.strip()
         if "```" in raw:
             parts = raw.split("```")
             raw = parts[1] if len(parts) > 1 else parts[0]
@@ -521,15 +519,14 @@ Reply in JSON only:
 }}"""
 
     try:
-        import anthropic
-        from config import ANTHROPIC_API_KEY
-        llm = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-        response = llm.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=512,
-            messages=[{"role": "user", "content": prompt}]
+        from google import genai as _genai
+        from config import GEMINI_API_KEY
+        llm = _genai.Client(api_key=GEMINI_API_KEY)
+        response = llm.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
         )
-        raw = response.content[0].text.strip()
+        raw = response.text.strip()
         if "```" in raw:
             parts = raw.split("```")
             raw = parts[1] if len(parts) > 1 else parts[0]
